@@ -1,0 +1,151 @@
+import {
+  OrthographicCamera,
+  PerspectiveCamera,
+  WebGLRenderTarget,
+} from 'https://esm.sh/three@0.150.0';
+import { Camera } from '../components/camera.ts';
+import { Type } from '../components/generic/components.ts';
+import { Transform } from '../components/transform.ts';
+import { Entity } from '../core/entity.ts';
+import Scene from '../core/scene.ts';
+import { AbstractSystem } from './abstract-system.ts';
+
+type CameraData = {
+  scene: Scene;
+  camera: Camera;
+  transform: Transform;
+};
+export class CameraSystem extends AbstractSystem {
+  async run(): Promise<void> {
+    const scenes = this.context.sceneManager.renderScenes;
+
+    if (scenes.length === 0) {
+      return;
+    }
+
+    const camerasToRender = this.getCameras(scenes);
+    const views = this.generateCameraPosition(camerasToRender);
+
+    camerasToRender.forEach(
+      ({ camera, transform, scene }: CameraData, index: number) => {
+        const { position } = transform;
+
+        if (!camera.instance) {
+          console.log('Cameras:', camerasToRender, views);
+          camera.instance = this.generateCamera(camera);
+          scene.instance.add(camera.instance);
+          camera.instance.position.x = position.x; // HAmmer
+          camera.instance.position.y = position.y; // HAmmer
+          camera.instance.position.z = position.z; // HAmmer
+
+          console.log(scene.instance);
+          // deno-lint-ignore ban-ts-comment
+          // @ts-ignore
+          camera.effectComposer = this.context.postprocessing(
+            scene.instance,
+            camera.instance,
+          );
+        }
+
+        const left = Math.floor(window.innerWidth * views[index].left);
+        const bottom = Math.floor(window.innerHeight * views[index].bottom);
+        const width = Math.floor(window.innerWidth * views[index].width);
+        const height = Math.floor(window.innerHeight * views[index].height);
+
+        this.context.renderer.setViewport(left, bottom, width, height);
+        this.context.renderer.setScissor(left, bottom, width, height);
+        this.context.renderer.setScissorTest(true);
+
+        if (camera.background) {
+          scene.instance.background = camera.background;
+        }
+
+        if (camera.instance instanceof OrthographicCamera) {
+          // this.context.renderer
+          console.log(left, bottom, width, height);
+          camera.instance.left = -(width / height) * 2;
+          camera.instance.right = width / (height / 2);
+          camera.instance.top = height / (width / 2);
+          camera.instance.bottom = -(height / width);
+        }
+
+        if (camera.instance instanceof PerspectiveCamera) {
+          camera.instance.aspect = width / height;
+        }
+
+        camera.instance.updateProjectionMatrix();
+
+        // deno-lint-ignore ban-ts-comment
+        // @ts-ignore
+        // camera.effectComposer.render();
+        this.context.renderer.render(scene.instance, camera.instance);
+      },
+    );
+  }
+
+  getCameras(scenes: Scene[]): CameraData[] {
+    let camerasData: CameraData[] = [];
+
+    scenes.forEach((scene) => {
+      const validEntities = scene.entitiesManager.getAllWithComponents(
+        Type.Camera,
+      );
+
+      camerasData = [
+        ...camerasData,
+        ...validEntities.map((entity: Entity) => ({
+          camera: entity.components.get(Type.Camera) as Camera,
+          transform: entity.components.get(Type.Transform) as Transform,
+          scene,
+        })),
+      ];
+    });
+
+    return camerasData;
+  }
+
+  generateCamera({ projection, fov, near, far }: Camera) {
+    const { clientWidth, clientHeight } = document.body;
+
+    switch (projection) {
+      case 'perspective':
+        return new PerspectiveCamera(
+          fov,
+          clientWidth / clientHeight,
+          near,
+          far,
+        );
+      case 'orthographic':
+        return new OrthographicCamera(
+          clientWidth / -2,
+          clientWidth / 2,
+          clientHeight / 2,
+          clientHeight / -2,
+          near,
+          far,
+        );
+    }
+  }
+
+  generateCameraPosition(cameras: Array<any>) {
+    const size = 2;
+    const rows = [];
+    for (let i = 0; i < cameras.length; i += size) {
+      rows.push([...cameras.slice(i, i + size)]);
+    }
+
+    const data = [];
+    for (let n = 0; n < rows.length; n++) {
+      for (let y = 0; y < rows[n].length; y++) {
+        data.push({
+          width: 0 + (1 / rows[n].length),
+          height: 0 + (1 / rows.length),
+          left: y === 0 ? 0 : 0 + (1 / (y + 1)),
+          bottom: n === 0 ? 0 : 0 + (1 / (n + 1)),
+        });
+      }
+    }
+
+    return data;
+  }
+}
