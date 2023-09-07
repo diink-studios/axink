@@ -4,6 +4,7 @@ import { Entity } from '../core/entity.ts';
 import { queryManager } from '../core/query-manager.ts';
 // import { query } from '../core/query';
 import { entitiesLoader } from '../loaders/loader-entities.ts';
+import { deepProxy } from '../utils/utils.ts';
 /**
  * Entities Manager
  * Description: TODO
@@ -30,6 +31,7 @@ export default class EntitiesManager {
         entity.components.has(type)
       );
       if (hasAllTypes) {
+        // console.log(entity);
         entities.push(entity);
       }
     }
@@ -83,8 +85,9 @@ export default class EntitiesManager {
   }
 
   add(entity: Entity): void {
-    this._entities.set(entity.id, cloneDeep(entity));
-    console.log(`HALLO ${entity.id}`, entity);
+    // console.log(`HALLO ${entity.id}`, entity);
+    this._entities.set(entity.id, entity._clone());
+    // console.log('Final', this._entities);
     queryManager.add('add', entity.id);
     // query.push(entity, 'add');
   }
@@ -99,7 +102,31 @@ export default class EntitiesManager {
     this._entities = new Map();
     this._entitiesNames.forEach((name: string) => {
       const entity = entitiesLoader.getEntity(name);
-      this._entities.set(entity.id, cloneDeep(entity));
+      const clonedEntity = entity._clone();
+      // const clonedEntity2 = cloneDeep(entity) as Entity;
+      // const tempComps = clonedEntity.components;
+      // clonedEntity.components.clear();
+
+      // for (const [key, value] of [...clonedEntity2.components]) {
+      //   clonedEntity.components.set(
+      //     key,
+      //     deepProxy(value, {
+      //       set: (obj: any, prop: any, value: any) => {
+      //         console.log('COMPONENT ADD TO UPDATE:');
+      //         queryManager.add('update', clonedEntity.id);
+      //         // deno-lint-ignore ban-ts-comment
+      //         // @ts-ignore
+      //         // obj[prop] = value;
+      //         return true;
+      //       },
+      //     }),
+      //   );
+      // }
+
+      this._entities.set(
+        entity.id,
+        clonedEntity,
+      );
       queryManager.add('add', entity.id);
     });
   }

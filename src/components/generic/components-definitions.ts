@@ -15,7 +15,10 @@ export interface SpriteDefinition {
   source: string;
   width: number;
   height: number;
-  pivot: string;
+  pivot?: string;
+
+  column?: number;
+  row?: number;
 }
 
 export interface ShapeDefinition {
@@ -55,16 +58,17 @@ export type BoxCollider2DInstance = {
   onTriggerExit: () => boolean;
 };
 
-// export type BoxColliderInstance = {
-//   position: any;
-//   colliding: boolean;
-//   prevPosition: any | null;
-//   willIntersect: string[];
-//   triggerCollision: any;
-//   onTriggerEnter: () => void;
-//   onTriggerStay: () => void;
-//   onTriggerExit: () => void;
-// };
+export type BoxColliderDefinition = {
+  height: number;
+  width: number;
+  mass: number;
+  mesh: boolean;
+  offset?: Vector2;
+  isStatic: boolean;
+  isTrigger?: boolean;
+  pivot: string;
+  fixedRotation?: boolean;
+};
 
 // Tilemap Component
 export interface TilemapDefinition {
@@ -92,6 +96,8 @@ export interface CameraDefinition {
   fov?: number;
   near?: number;
   far?: number;
+  factor?: number;
+  lookAt?: string;
   background?: Color;
 }
 
@@ -99,15 +105,16 @@ export interface CameraControlDefinition {
   controlType?: 'orbit' | 'map';
 }
 
-// export interface MeshDefinition {
-//   model: string;
-//   castShadow?: boolean;
-//   receiveShadow?: boolean;
-//   visible?: boolean;
-//   material?: any;
-//   fileType?: string;
-//   shader?: string;
-// }
+export interface MeshDefinition {
+  model: string;
+  castShadow?: boolean;
+  receiveShadow?: boolean;
+  visible?: boolean;
+  material?: any;
+  fileType?: string;
+  shader?: string;
+  animation?: boolean;
+}
 
 // export interface PlaneMeshDefinition extends Omit<MeshDefinition, 'model'> {
 //   width?: number;
@@ -166,12 +173,13 @@ export type ComponentsDefinitions =
   | SpriteDefinition
   | ShapeDefinition
   | ScriptDefinition
+  | BoxColliderDefinition
   | BoxCollider2DDefinition
   | CameraDefinition
   | CameraControlDefinition
   | TilemapDefinition
   | RectangleShapeDefinition
-  // | MeshDefinition
+  | MeshDefinition
   // | PlaneMeshDefinition
   | InterfaceDefinition
   | LightDefinition

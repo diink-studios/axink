@@ -1,14 +1,15 @@
 import {
   OrthographicCamera,
   PerspectiveCamera,
-  WebGLRenderTarget,
 } from 'https://esm.sh/three@0.150.0';
+import * as THREE from 'https://esm.sh/three@0.150.0';
 import { Camera } from '../components/camera.ts';
-import { Type } from '../components/generic/components.ts';
+import { Mesh, Sprite, Type } from '../components/generic/components.ts';
 import { Transform } from '../components/transform.ts';
 import { Entity } from '../core/entity.ts';
 import Scene from '../core/scene.ts';
 import { AbstractSystem } from './abstract-system.ts';
+import CameraControls from 'https://esm.sh/camera-controls@2.3.3';
 
 type CameraData = {
   scene: Scene;
@@ -16,6 +17,9 @@ type CameraData = {
   transform: Transform;
 };
 export class CameraSystem extends AbstractSystem {
+  async start(deltaTime?: number | undefined): Promise<void> {
+    CameraControls.install({ THREE: THREE });
+  }
   async run(): Promise<void> {
     const scenes = this.context.sceneManager.renderScenes;
 
@@ -31,14 +35,12 @@ export class CameraSystem extends AbstractSystem {
         const { position } = transform;
 
         if (!camera.instance) {
-          console.log('Cameras:', camerasToRender, views);
           camera.instance = this.generateCamera(camera);
           scene.instance.add(camera.instance);
           camera.instance.position.x = position.x; // HAmmer
           camera.instance.position.y = position.y; // HAmmer
           camera.instance.position.z = position.z; // HAmmer
 
-          console.log(scene.instance);
           // deno-lint-ignore ban-ts-comment
           // @ts-ignore
           camera.effectComposer = this.context.postprocessing(
@@ -62,11 +64,10 @@ export class CameraSystem extends AbstractSystem {
 
         if (camera.instance instanceof OrthographicCamera) {
           // this.context.renderer
-          console.log(left, bottom, width, height);
-          camera.instance.left = -(width / height) * 2;
-          camera.instance.right = width / (height / 2);
-          camera.instance.top = height / (width / 2);
-          camera.instance.bottom = -(height / width);
+          camera.instance.left = width / -camera.factor;
+          camera.instance.right = width / camera.factor;
+          camera.instance.top = height / camera.factor;
+          camera.instance.bottom = height / -camera.factor;
         }
 
         if (camera.instance instanceof PerspectiveCamera) {
@@ -74,6 +75,23 @@ export class CameraSystem extends AbstractSystem {
         }
 
         camera.instance.updateProjectionMatrix();
+
+        if (camera.lookAt && !camera.lookAtSet) {
+          const lookAtEntity = scene.entitiesManager.getByName(camera.lookAt);
+          const lookAtSprite = lookAtEntity?.getComponent(
+            Type.Sprite,
+          ) as Sprite;
+          if (lookAtSprite && lookAtSprite.instance) {
+            console.log('ADDING TO PARENT');
+            lookAtSprite.instance.add(camera.instance);
+            camera.instance.lookAt(lookAtSprite.instance.position);
+            camera.instance.position.x = position.x; // HAmmer
+            camera.instance.position.y = position.y; // HAmmer
+            camera.instance.position.z = position.z; // HAmmer
+
+            camera.lookAtSet = true;
+          }
+        }
 
         // deno-lint-ignore ban-ts-comment
         // @ts-ignore

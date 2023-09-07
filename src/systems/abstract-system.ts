@@ -39,9 +39,9 @@ export abstract class AbstractSystem implements System {
       this.queryComponents,
     );
 
-    if (validEntities.length > 0) {
-      console.log('Query: [', event, ']', validEntities);
-    }
+    // if (validEntities.length > 0) {
+    //   console.log('Query: [', event, ']', validEntities);
+    // }
 
     return validEntities;
   }

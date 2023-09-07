@@ -7,15 +7,24 @@ import { CameraSystem } from './camera-system.ts';
 // import { SceneSystem } from './scene-system.ts';
 // import { ScriptSystem } from './script-system.ts';
 import { ShapeSystem } from './shape-system.ts';
-// import { SpriteSystem } from './sprite-system.ts';
+import { SpriteSystem } from './sprite-system.ts';
+import { MeshSystem } from './mesh-system.ts';
+import { LightSystem } from './light-system.ts';
+import { FbxAnimationSystem } from './fbx-animation-system.ts';
+import { PhysicsSystem } from './physics-system.ts';
 interface Constructable<T> {
   new (context: Axink): T;
 }
 
 const SYSTEMS: Record<string, Constructable<System>> = {
-  ScriptSystem: ScriptSystem,
   ShapeSystem: ShapeSystem,
+  MeshSystem: MeshSystem,
+  SpriteSystem: SpriteSystem,
+  PhysicsSystem: PhysicsSystem,
+  FbxAnimationSystem: FbxAnimationSystem,
   CameraSystem: CameraSystem,
+  LightSystem: LightSystem,
+  ScriptSystem: ScriptSystem,
 };
 
 export type SystemsConfig = {

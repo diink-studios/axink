@@ -1,10 +1,12 @@
 import { Components, Type } from '../components/generic/components.ts';
 import { ComponentsDefinitions } from '../components/generic/components-definitions.ts';
 import { Script } from '../components/script.ts';
-import { deepUpdate, generateId } from '../utils/utils.ts';
+import { deepProxy, deepUpdate, generateId } from '../utils/utils.ts';
 import ScriptInstance from './script/script-instance.ts';
 import { queryManager } from './query-manager.ts';
 import { Component } from '../components/generic/abstract-component.ts';
+
+import DeepProxy from 'https://esm.sh/proxy-deep@3.1.1';
 
 export class Entity {
   public readonly id: string;
@@ -34,21 +36,27 @@ export class Entity {
         [...currentComp, component] as Script[],
       );
     } else {
-      console.log('ADD COMPONENT');
+      // console.log('ADD COMPONENT', this.id);
       queryManager.add('add', this.id);
+      const comp = deepProxy(component, {
+        set: (obj: any, prop: any, value: any) => {
+          // if (!('sequence' in obj)) {
+          //   console.log('COMPONENT ADD TO UPDATE:', obj, prop, value);
+          // }
+          queryManager.add('update', this.id);
+          // deno-lint-ignore ban-ts-comment
+          // @ts-ignore
+          obj[prop] = value;
+          return true;
+        },
+      });
+
       this.components.set(
         component.type,
-        new Proxy(component, {
-          set: (obj, prop, value) => {
-            queryManager.add('update', this.id);
-            // deno-lint-ignore ban-ts-comment
-            // @ts-ignore
-            obj[prop] = value;
-            return true;
-          },
-        }),
+        comp,
       );
     }
+    // console.log(this.id, this.components);
     return this;
   }
 
@@ -82,14 +90,45 @@ export class Entity {
 
   _clone(): Entity {
     const clone = new Entity(this.name);
-    console.log('CLONING', clone.id);
+    // console.log('CLONING', clone.id);
 
     for (const [, component] of this.components) {
       if (Array.isArray(component)) {
         component.forEach((item) => {
-          clone.addComponent(item._clone());
+          if (item.type === Type.Script) {
+            clone.addComponent(item._clone());
+          } else {
+            const proxyComp = deepProxy(item._clone(), {
+              set: (obj: any, prop: any, value: any) => {
+                // if (!('sequence' in obj)) {
+                //   console.log('COMPONENT ADD TO UPDATE:', obj, prop, value);
+                // }
+                queryManager.add('update', clone.id);
+                // deno-lint-ignore ban-ts-comment
+                // @ts-ignore
+                obj[prop] = value;
+                return true;
+              },
+            });
+            clone.addComponent(proxyComp);
+          }
         });
       } else {
+        if (component.type !== Type.Script) {
+          const proxyComp = deepProxy(component._clone(), {
+            set: (obj: any, prop: any, value: any) => {
+              // if (!('sequence' in obj)) {
+              //   console.log('COMPONENT ADD TO UPDATE:', obj, prop, value);
+              // }
+              queryManager.add('update', clone.id);
+              // deno-lint-ignore ban-ts-comment
+              // @ts-ignore
+              obj[prop] = value;
+              return true;
+            },
+          });
+          clone.addComponent(proxyComp);
+        }
         clone.addComponent(component._clone());
       }
     }

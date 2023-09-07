@@ -1,5 +1,11 @@
 import { TextureLoader } from 'https://esm.sh/three@0.150.0';
-import { Sprite, Type } from '../components/generic/components.ts';
+import { OBJLoader } from 'https://esm.sh/three@0.150.0/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from 'https://esm.sh/three@0.150.0/examples/jsm/loaders/MTLLoader.js';
+import { GLTFLoader } from 'https://esm.sh/three@0.150.0/examples/jsm/loaders/GLTFLoader.js';
+
+import { FBXLoader } from 'https://esm.sh/three@0.150.0/examples/jsm/loaders/FBXLoader.js';
+
+import { Mesh, Sprite, Type } from '../components/generic/components.ts';
 import Scene from '../core/scene.ts';
 import { ResourcesDefinition } from './loaders.d.ts';
 
@@ -31,6 +37,10 @@ class ResourcesLoader {
   };
 
   private _textureLoader = new TextureLoader();
+  private _objLoader = new OBJLoader();
+  private _mtlLoader = new MTLLoader();
+  private _fbxLoader = new FBXLoader();
+  private _gltfLoader = new GLTFLoader();
 
   get state() {
     return this._state;
@@ -41,6 +51,7 @@ class ResourcesLoader {
   }
 
   addResources(resources: ResourcesDefinition): void {
+    console.log('[Resources Loader]', resources);
     this._resourcesSource = resources;
   }
 
@@ -68,13 +79,16 @@ class ResourcesLoader {
 
   async load(scenes: Scene[]) {
     this._state = 'loading';
+
     for (const scene of scenes) {
       const validEntities = scene.entitiesManager.getAllWithOneOfComponents(
         Type.Sprite,
+        Type.Mesh,
       );
 
       for (const entity of validEntities) {
         const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
+        const meshComponent = entity.components.get(Type.Mesh) as Mesh;
 
         if (
           spriteComponent && spriteComponent.source &&
@@ -82,31 +96,81 @@ class ResourcesLoader {
         ) {
           this._resources.images.set(
             spriteComponent.source,
-            await this._textureLoader.load(
-              `./resources/images/${
-                this._resourcesSource.images.get(spriteComponent.source)
+            await this._textureLoader.loadAsync(
+              `./resources/images/${this._resourcesSource.images.get(spriteComponent.source)
               }`,
             ),
           );
+        }
+
+        if (
+          meshComponent && meshComponent.model &&
+          !(meshComponent.model in this._resources.models)
+        ) {
+          console.log(meshComponent.fileType)
+          switch (meshComponent.fileType) {
+            case 'obj':
+              await this.loadObj(meshComponent);
+              break;
+            case 'fbx':
+              await this.loadFbx(meshComponent);
+              break;
+            case 'glb':
+              await this.loadGlb(meshComponent);
+              break;
+          }
         }
       }
     }
     this._state = 'completed';
   }
 
-  // async addToLoad(resources: Map<string, PIXI.Texture>) {
-  //   return new Promise((resolve, reject) => {
-  //     resources.forEach((val: PIXI.Texture, key: string) => {
-  //       this.loader.add(key, val);
-  //     });
+  loadResourceModels(key: any, value: any) {
+    return new Promise((resolve, reject) => {
+    });
+  }
 
-  //     this.loader.load();
+  async loadObj(mesh: Mesh) {
+    const mtlMateial = await this._mtlLoader.loadAsync(
+      `./resources/models/${this._resourcesSource.models.get(mesh.model)}.mtl`,
+    );
 
-  //     this.loader.onComplete.add(() => {
-  //       return resolve('done');
-  //     });
-  //   });
-  // }
+    // deno-lint-ignore ban-ts-comment
+    // @ts-ignore
+    this._objLoader.setMaterials(mtlMateial);
+
+    this._resources.models.set(
+      mesh.model,
+      await this._objLoader.loadAsync(
+        `./resources/models/${this._resourcesSource.models.get(mesh.model)
+        }.obj`,
+      ),
+    );
+  }
+
+  async loadFbx(mesh: Mesh) {
+    const object = await this._fbxLoader.loadAsync(
+      `./resources/models/${this._resourcesSource.models.get(mesh.model)}.fbx`,
+    );
+    object.scale.multiplyScalar(0.05);
+
+    this._resources.models.set(
+      mesh.model,
+      object,
+    );
+  }
+
+  async loadGlb(mesh: Mesh) {
+    const object = await this._gltfLoader.loadAsync(
+      `./resources/models/${this._resourcesSource.models.get(mesh.model)}.glb`,
+    );
+    // object.scale.multiplyScalar(0.05);
+
+    this._resources.models.set(
+      mesh.model,
+      object,
+    );
+  }
 }
 
 export const resourcesLoader = new ResourcesLoader();

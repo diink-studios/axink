@@ -14,6 +14,7 @@ export type AxinkGraphics = {
   antialias?: boolean;
   background?: number; //0xffffff
   element?: string;
+  scaleFactor?: number;
 };
 
 export interface AxinkConfigs {

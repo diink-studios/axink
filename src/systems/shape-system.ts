@@ -44,7 +44,7 @@ export class ShapeSystem extends AbstractSystem {
                 height,
                 radius,
               });
-              shapeComponent.instance.scale.set(.01, .01, .01);
+              // shapeComponent.instance.scale.set(.01, .01, .01);
             }
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -53,8 +53,7 @@ export class ShapeSystem extends AbstractSystem {
           }
 
           if (shapeComponent.instance) {
-            shapeComponent.instance.material.color = shapeComponent.fill;
-
+            // shapeComponent.instance.material.color = shapeComponent.fill;
             shapeComponent.instance?.position.set(x, y, z);
           }
         },
@@ -68,7 +67,7 @@ export class ShapeSystem extends AbstractSystem {
           ) as Transform;
 
           if (shapeComponent.instance) {
-            shapeComponent.instance.material.color = shapeComponent.fill;
+            // shapeComponent.instance.material.color = shapeComponent.fill;
             shapeComponent.instance.position.set(x, y, z);
           }
         },

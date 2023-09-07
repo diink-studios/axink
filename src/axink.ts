@@ -25,6 +25,7 @@ import Scene, { SceneData } from './core/scene.ts';
 import { resourcesLoader } from './loaders/loader-resources.ts';
 import { queryManager } from './core/query-manager.ts';
 import { entitiesLoader } from './loaders/loader-entities.ts';
+import { scriptsLoader } from './loaders/loader-scripts.ts';
 
 export class Axink {
   private _systems: Map<string, System>;
@@ -34,13 +35,15 @@ export class Axink {
   public readonly composer: EffectComposer;
   public readonly composers: EffectComposer[] = [];
 
+  public readonly scaleFactor: number;
+
   constructor({ systems = {}, graphics }: AxinkConfigs) {
     queryManager.context = this;
     this.sceneManager = new SceneManager();
     this.renderer = this.setupRenderer(graphics);
     this.composer = new EffectComposer(this.renderer);
-
     this._systems = loadSystem(this, systems);
+    this.scaleFactor = graphics.scaleFactor || 1;
   }
 
   /**
@@ -125,39 +128,52 @@ export class Axink {
     if (initializationParameters.entities) {
       entitiesLoader.addEntities(initializationParameters.entities);
     }
-    // if (initializationParameters.resources) {
-    //   console.log('Resources');
-    //   resourcesLoader.addResources(initializationParameters.resources);
-    // }
+    if (initializationParameters.resources) {
+      console.log('Resources');
+      resourcesLoader.addResources(initializationParameters.resources);
+    }
     // if (initializationParameters.interfaces != null) {
     //   interfacesLoader.addInterfaces(initializationParameters.interfaces);
     // }
-    // if (initializationParameters.scripts) {
-    //   await scriptsLoader.load({
-    //     scripts: initializationParameters.scripts,
-    //     engine: this,
-    //   });
-    // }
+    if (initializationParameters.scripts) {
+      await scriptsLoader.load({
+        scripts: initializationParameters.scripts,
+        engine: this,
+      });
+    }
   }
 
   async start(): Promise<void> {
     console.log('[AXINK]::START');
     this.sceneManager.init();
 
+    console.log(
+      'AFTER INIT:',
+      this.sceneManager.currentScene?.entitiesManager.getAll(),
+    );
+
     if (this.sceneManager.currentScene) {
-      this.sceneManager.currentScene.load();
+      await this.sceneManager.currentScene.load();
+
+      console.log(
+        'AFTER LOAD:',
+        this.sceneManager.currentScene?.entitiesManager.getAll(),
+      );
       await resourcesLoader.load(this.sceneManager.renderScenes);
 
-      const geometry = new BoxGeometry(1, 1, 1);
-      const material = new MeshBasicMaterial({ color: 0x00ff00 });
-      const cube = new Mesh(geometry, material);
-      this.sceneManager.currentScene.addChild(cube);
+      // const geometry = new BoxGeometry(1, 1, 1);
+      // const material = new MeshBasicMaterial({ color: 0x00ff00 });
+      // const cube = new Mesh(geometry, material);
+      // this.sceneManager.currentScene.addChild(cube);
     }
-
+    console.log(this.sceneManager.currentScene?.entitiesManager.getAll());
     console.log('[AXINK]::SYSTEMS(START)');
-    this._systems.forEach(async (system: System) => {
-      await system.start();
-    });
+
+    for (const system of [...this._systems]) {
+      await system[1].start();
+    }
+    // this._systems.forEach(async (system: System) => {
+    // });
 
     console.log('[AXINK]::LOOP(START)');
 

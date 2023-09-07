@@ -26,6 +26,7 @@ class QueryManager {
     const entities = this.context.sceneManager.currentScene?.entitiesManager
       .getAllWithComponents(...components);
 
+    // console.log('GetQuery:', entities);
     return entities?.filter((entity) => this.events[event].includes(entity.id));
   }
 

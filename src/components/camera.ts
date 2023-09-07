@@ -20,6 +20,12 @@ export class Camera extends AbstractComponent {
 
   public far: number;
 
+  public factor: number;
+
+  public lookAt?: string;
+
+  public lookAtSet = false;
+
   public background?: Color;
 
   public context: '3d' | '2d';
@@ -31,8 +37,10 @@ export class Camera extends AbstractComponent {
     this.projection = data?.projection || 'perspective';
     this.fov = data?.fov || 45;
     this.near = data?.near || 1;
-    this.far = data?.far || 1000;
+    this.far = data?.far || 10000;
+    this.factor = data?.factor || 100;
     this.background = data?.background || new Color(0xffffff);
+    this.lookAt = data?.lookAt;
   }
 
   _clone(): Camera {
@@ -42,6 +50,7 @@ export class Camera extends AbstractComponent {
       fov: this.fov,
       near: this.near,
       far: this.far,
+      lookAt: this.lookAt,
       background: this.background,
     });
   }

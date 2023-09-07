@@ -35,9 +35,9 @@ export class Transform extends AbstractComponent {
   _clone(): Transform {
     // const { position, rotation, scale } = this.initialData;
     return new Transform({
-      position: cloneDeep(this.position),
-      rotation: cloneDeep(this.rotation),
-      scale: cloneDeep(this.scale),
+      position: this.position,
+      rotation: this.rotation,
+      scale: this.scale,
     });
   }
 }

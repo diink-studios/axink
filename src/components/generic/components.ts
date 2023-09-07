@@ -1,6 +1,9 @@
+import { BoxCollider } from '../box-collider.ts';
 import { BoxCollider2D } from '../box-collider-2d.ts';
 import { Camera } from '../camera.ts';
 import { Interface } from '../interface.ts';
+import { Light } from '../light.ts';
+import { Mesh } from '../mesh.ts';
 import { Script } from '../script.ts';
 import { Shape } from '../shape.ts';
 import { Rectangle } from '../shapes/rectangle-shape.ts';
@@ -47,22 +50,26 @@ export type Components =
   | Rectangle
   | Interface
   | Sprite
+  | BoxCollider
   | BoxCollider2D
   | Camera
+  | Mesh
+  | Light
   | Tilemap;
 
 export {
+  BoxCollider,
   BoxCollider2D,
   Camera,
   Interface,
+  Light,
+  Mesh,
   Rectangle,
   Script,
   Shape,
   Sprite,
   Tilemap,
   Transform,
-  // Mesh,
-  // Light,
   // Animator,
   // PlaneMesh,
   // DirectionalLight,

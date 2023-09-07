@@ -51,7 +51,6 @@ export default class SceneManager {
       this._currentScene,
       // ...this.scenes[0].childScenes.map((name) => this.getSceneByName(name)),
     ];
-    console.log('Current Scene:', this._currentScene);
   }
 
   /**

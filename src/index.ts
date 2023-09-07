@@ -6,6 +6,8 @@ export {
   BoxCollider2D,
   Camera,
   Interface,
+  Light,
+  Mesh,
   Rectangle,
   Script,
   Shape,
@@ -18,4 +20,4 @@ export {
  * Script Export
  */
 export { AbstractScript } from './core/script/script-abstract.ts';
-export { Vector2, Vector3, Color } from 'https://esm.sh/three@0.150.0';
+export { Color, Vector2, Vector3 } from 'https://esm.sh/three@0.150.0';

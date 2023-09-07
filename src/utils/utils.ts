@@ -15,3 +15,14 @@ export function deepUpdate(object: any, values: any) {
 
   return object;
 }
+
+export function deepProxy(obj: any, validator: any) {
+  for (let property in obj) {
+    if (obj.hasOwnProperty(property)) {
+      if (typeof obj[property] == 'object') {
+        obj[property] = deepProxy(obj[property], validator);
+      }
+    }
+  }
+  return new Proxy(obj, validator);
+}

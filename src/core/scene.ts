@@ -1,9 +1,9 @@
 import {
-  BoxGeometry,
-  Mesh,
-  MeshBasicMaterial,
+  AxesHelper,
+  GridHelper,
   Scene as TScene,
   Vector3,
+  Color,
 } from 'https://esm.sh/three@0.150.0';
 import { Camera, Type } from '../components/generic/components.ts';
 import { Transform } from '../components/transform.ts';
@@ -22,7 +22,7 @@ import { Entity } from './entity.ts';
 export type SceneData = {
   name: string;
   order: number;
-  background?: string;
+  background?: Color;
   entities: string[];
   scripts: string[];
   childScenes: string[];
@@ -59,6 +59,10 @@ export default class Scene {
     this.id = generateId();
 
     this.instance = new TScene();
+
+    // var axes = new AxesHelper(50);
+    // this.instance.add(axes);
+
     // this.instance.background = new Color( 0xff000000 );
 
     this.initialData = sceneData;
@@ -98,6 +102,9 @@ export default class Scene {
     await resourcesLoader.load([this]);
     this.clean();
     this.entitiesManager.reset();
+
+    const gridHelper = new GridHelper(100, 10);
+    this.instance.add(gridHelper);
   }
 
   unload(): void {
