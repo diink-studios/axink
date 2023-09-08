@@ -90,7 +90,7 @@ export class Input {
       wasReleased: false,
     });
   }
-  
+
   // private _initWheel(key: string) {
   //   this._keys.set(key, {
   //     negative: false,
@@ -98,7 +98,7 @@ export class Input {
   //   });
   // }
 
-  
+
 }
 
 export const input = new Input();

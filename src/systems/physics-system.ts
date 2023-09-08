@@ -2,11 +2,11 @@ import { BoxCollider, Mesh, Transform, Type } from '../components/generic/compon
 import { Entity, Sprite } from '../index.ts';
 import { resourcesLoader } from '../loaders/loader-resources.ts';
 import { AbstractSystem } from './abstract-system.ts';
-import { AnimationMixer, Clock, MathUtils, BufferAttribute, LineBasicMaterial, BufferGeometry, LineSegments } from 'https://esm.sh/three@0.150.0';
+import { Quaternion, Vector3, MathUtils, BufferAttribute, LineBasicMaterial, BufferGeometry, LineSegments } from 'https://esm.sh/three@0.150.0';
 // import * as CANNON from 'https://esm.sh/cannon-es@0.20.0';
 // import CannonDebugger from 'https://esm.sh/cannon-es-debugger@1.0.0';
-import { geometryToShape } from '../utils/mesh.ts';
-
+import { spriteToRapier, meshToRapier } from '../utils/mesh.ts';
+import { ShapeType, threeToCannon } from 'https://esm.sh/three-to-cannon@4.3.0';
 
 // import RAPIER from 'https://esm.sh/@dimforge/rapier3d@0.11.2';
 import RAPIER from 'https://cdn.skypack.dev/@dimforge/rapier3d-compat';
@@ -56,12 +56,13 @@ export class PhysicsSystem extends AbstractSystem {
 
       this.query('add').filter((entity) => entity.visible).forEach(
         (entity: Entity) => {
+          console.log('PHYSICS::ADD', entity.name);
           const meshComponent = entity.components.get(Type.Mesh) as Mesh;
           const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
           const colliderComponent = entity.components.get(Type.BoxCollider) as BoxCollider;
 
-          // console.log('Shape 1:', entity.id, meshComponent);
-          // console.log('Sprite 2:', entity.id, spriteComponent);
+          console.log('Mesh:', meshComponent);
+          console.log('Sprite:', spriteComponent);
 
           const { position: { x, y, z }, rotation } = entity.components.get(
             Type.Transform,
@@ -71,74 +72,66 @@ export class PhysicsSystem extends AbstractSystem {
 
           if (!colliderComponent.instance && meshComponent?.instance) {
             // console.log('Shape 1:', entity.id, instance);
-            // const result = threeToCannon(
-            //   meshComponent?.instance,
-            //   {
-            //     type: ShapeType.HULL,
-            //   },
-            // );
 
-            const box = RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5);
-            colliderComponent.instance = this.world.createCollider(box);
-
-            // console.log('Result:', entity.id, result);
-            // if (result) {
-
-            //   const { shape, offset, orientation } = result;
-
-            //   console.log('Shape:', entity.id, result);
-            //   colliderComponent.instance = new CANNON.Body({
-            //     mass: 0, // kg
-            //     position: new CANNON.Vec3(0, 0, 0), // m
-            //     shape,
-            //   });
-
-            //   // colliderComponent.instance.quaternion.setFromAxisAngle(
-            //   //   new CANNON.Vec3(0, 1, 0),
-            //   //   MathUtils.degToRad(rotation.y),
-            //   // );
-            //   // colliderComponent.instance.quaternion.setFromAxisAngle(
-            //   //   new CANNON.Vec3(0, 0, 1),
-            //   //   MathUtils.degToRad(rotation.z),
-            //   // );
-            //   //
-            //   colliderComponent.instance.quaternion.setFromEuler(
-            //     MathUtils.degToRad(rotation.x),
-            //     MathUtils.degToRad(rotation.y),
-            //     MathUtils.degToRad(rotation.z),
-            //     'XYZ',
-            //   );
-
-            //   colliderComponent.instance.addEventListener('collide', function (e: any) {
-            //     console.log(entity.id, e);
-            //   });
-
-            //   colliderComponent.instance.fixedRotation = true;
-            //   this.world.addBody(colliderComponent.instance);
-
-            //   console.log('Cannon World:', this.world);
-            // }
+            const qua = new Quaternion(0, 0, 0, 0);
+            MathUtils.setQuaternionFromProperEuler(
+              qua,
+              MathUtils.degToRad(rotation.x),
+              MathUtils.degToRad(rotation.y),
+              MathUtils.degToRad(rotation.z),
+              'XYX');
 
             // @ts-ignore
-            // geometryToShape(meshComponent.instance?.children[0].geometry);
-            // if (colliderComponent.mesh) {
-            // }
-            // Create a plane
-            // var groundBody = new CANNON.Body({
-            //   mass: 0, // mass == 0 makes the body static
-            //   shape: new CANNON.Plane(),
-            // });
-            // groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-            // this.world.addBody(groundBody);
+            const { vertices, indices } = meshToRapier(meshComponent.instance)
 
-            // console.log('Cannon Debug:', this.cannonDebugger);
+            const box = RAPIER.ColliderDesc.trimesh(vertices, indices)
+              .setTranslation(x, y, z)
+              .setRotation({
+                w: qua.w,
+                x: qua.x,
+                y: qua.y,
+                z: qua.z
+              });
+
+            colliderComponent.instance = this.world.createCollider(box);
+
           }
 
           if (!colliderComponent.instance && spriteComponent?.instance) {
             const { width, height } = spriteComponent;
 
-            const box = RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5);
-            colliderComponent.instance = this.world.createCollider(box);
+            const qua = new Quaternion(0, 0, 0, 0);
+            MathUtils.setQuaternionFromProperEuler(
+              qua,
+              MathUtils.degToRad(rotation.x),
+              MathUtils.degToRad(rotation.y),
+              MathUtils.degToRad(rotation.z),
+              'XYX');
+
+
+            let characterDesc = RAPIER.RigidBodyDesc.dynamic()
+              .setTranslation(x, y, z)
+              .setRotation({
+                w: qua.w,
+                x: qua.x,
+                y: qua.y,
+                z: qua.z
+              })
+              .lockRotations();
+
+
+            colliderComponent.instance = this.world.createRigidBody(characterDesc);
+
+            // let characterColliderDesc = RAPIER.ColliderDesc.cylinder(1.2, 0.6);
+            // let characterCollider = world.createCollider(
+            //   characterColliderDesc,
+            //   character,
+            // );
+            const box = RAPIER.ColliderDesc.cuboid(this.getScaled(width), this.getScaled(height), 0.1);
+            // .setTranslation(x, y, z)
+
+            // .setDensity(1.3);
+            this.world.createCollider(box, colliderComponent.instance);
             // colliderComponent.instance.quaternion.setFromAxisAngle(
             //   new CANNON.Vec3(0, 1, 0),
             //   MathUtils.degToRad(rotation.y),
@@ -234,20 +227,20 @@ export class PhysicsSystem extends AbstractSystem {
       //   },
       // );
 
-      // const validEntities = scene.entitiesManager
-      //   .getAllWithComponents(...this.queryComponents);
+      const validEntities = scene.entitiesManager
+        .getAllWithComponents(...this.queryComponents);
 
-      // validEntities.forEach((entity: Entity) => {
-      //   const boxColliderComponent = entity.components.get(Type.BoxCollider) as BoxCollider;
-      //   const transform = entity.components.get(
-      //     Type.Transform,
-      //   ) as Transform;
+      validEntities.forEach((entity: Entity) => {
+        const boxColliderComponent = entity.components.get(Type.BoxCollider) as BoxCollider;
+        const transform = entity.components.get(
+          Type.Transform,
+        ) as Transform;
 
-      //   transform.position = boxColliderComponent.instance.position;
-      // });
+        // console.log(boxColliderComponent.instance);
+        transform.position = boxColliderComponent.instance.translation();
+      });
     });
-    console.log('LOG', this.world)
-    this.world.step();
+    // console.log('LOG', this.world)
     scenes.forEach((scene) => {
       let buffers = this.world.debugRender();
       // this.lines.visible = true;
@@ -260,6 +253,9 @@ export class PhysicsSystem extends AbstractSystem {
         new BufferAttribute(buffers.colors, 4),
       );
     });
+
+
+    this.world.step();
   }
 
   getScaled(value: number) {

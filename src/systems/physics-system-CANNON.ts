@@ -288,7 +288,7 @@ export class PhysicsSystem extends AbstractSystem {
           Type.Transform,
         ) as Transform;
 
-        transform.position = boxColliderComponent.instance.position;
+        transform.position = boxColliderComponent.instance.translation;
       });
     });
 

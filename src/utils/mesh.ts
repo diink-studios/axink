@@ -1,5 +1,5 @@
 import * as CANNON from 'https://esm.sh/cannon-es@0.20.0';
-import { BufferGeometry, Vector3 } from 'https://esm.sh/three@0.150.0';
+import { BufferGeometry, Vector3, Mesh, Sprite } from 'https://esm.sh/three@0.150.0';
 import { ConvexGeometry } from 'https://esm.sh/three@0.150.0/examples/jsm/geometries/ConvexGeometry.js';
 import { SimplifyModifier } from 'https://esm.sh/three@0.150.0/examples/jsm/modifiers/SimplifyModifier.js';
 import { mergeVertices } from 'https://esm.sh/three@0.150.0/examples/jsm/utils/BufferGeometryUtils.js';
@@ -116,4 +116,75 @@ export function geometryToShape(bufferGeometry: BufferGeometry) {
   const points = simplifiedGeometry.getAttribute('position');
   const geometry = mergeVertices(simplifiedGeometry);
   console.log('GEOMETRY', geometry);
+}
+
+
+function findMeshElement(mesh: Mesh) {
+  console.log('Mesh', mesh);
+  if (mesh.isMesh) {
+    return mesh;
+  } else {
+    for (const child of mesh.children) {
+      if (child.type === 'Mesh') {
+        return child as Mesh;
+      }
+    }
+  }
+}
+
+export function meshToRapier(mesh: Mesh) {
+
+  const element = findMeshElement(mesh)
+  console.log('FOUND:', element)
+  if (!element) throw Error('No Mesh');
+
+  const positionAttribute = element.geometry.getAttribute('position');
+  const vertices = []
+  const indices = [];
+
+  for (let vertexIndex = 0; vertexIndex < positionAttribute.count; vertexIndex++) {
+    const vertex = new Vector3();
+    // @ts-ignore
+    vertex.fromBufferAttribute(positionAttribute, vertexIndex);
+    indices.push(vertexIndex);
+    vertices.push(vertex.x, vertex.y, vertex.z);
+  }
+
+  return { vertices, indices };
+
+}
+
+
+function findSpriteElement(sprite: Sprite) {
+  if (sprite.isSprite) {
+    return sprite;
+  } else {
+    for (const child of sprite.children) {
+      if (child.type === 'Sptrite') {
+        return sprite as Sprite;
+      }
+    }
+  }
+}
+
+export function spriteToRapier(sprite: Sprite) {
+
+  const element = findSpriteElement(sprite)
+  console.log('FOUND:', element)
+  if (!element) throw Error('No Sprite');
+
+  const positionAttribute = element.geometry.getAttribute('position').data;
+  const vertices = []
+  const indices = [];
+
+  for (let vertexIndex = 0; vertexIndex < positionAttribute.count; vertexIndex++) {
+    const vertex = new Vector3();
+    // @ts-ignore
+    vertex.fromBufferAttribute(positionAttribute, vertexIndex);
+    indices.push(vertexIndex);
+    vertices.push(vertex.x, vertex.y, vertex.z);
+  }
+
+  return { vertices, indices };
+
 }

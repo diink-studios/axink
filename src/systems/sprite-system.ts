@@ -85,17 +85,17 @@ export class SpriteSystem extends AbstractSystem {
         },
       );
 
-      // this.query('update').filter((entity) => entity.visible).forEach(
-      //   (entity: Entity) => {
-      //     console.log('Update Entity');
-      //     const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
-      //     const { position: { x, y, z } } = entity.components.get(
-      //       Type.Transform,
-      //     ) as Transform;
+      this.query('update').filter((entity) => entity.visible).forEach(
+        (entity: Entity) => {
+          console.log('Update Entity');
+          const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
+          const { position: { x, y, z } } = entity.components.get(
+            Type.Transform,
+          ) as Transform;
 
-      //     spriteComponent.instance?.position.set(x, y, z);
-      //   },
-      // );
+          spriteComponent.instance?.position.set(x, y, z);
+        },
+      );
 
       const validEntities = scene.entitiesManager
         .getAllWithComponents(...this.queryComponents);
@@ -116,13 +116,13 @@ export class SpriteSystem extends AbstractSystem {
 
             if (
               (spriteComponent.animation.tickCount as number) >
-                (ticksPerFrame as number)
+              (ticksPerFrame as number)
             ) {
               spriteComponent.animation.tickCount = 0;
               if (
                 (sequences[sequence.name].length -
                   1) <=
-                  sequence.currentFrame
+                sequence.currentFrame
               ) {
                 spriteComponent.animation.sequence.currentFrame = 0;
               } else {
