@@ -3,7 +3,6 @@ export { Axink } from './axink.ts';
 export { Entity } from './core/entity.ts';
 
 export {
-  // BoxCollider2D,
   BoxCollider,
   Camera,
   Interface,
