@@ -5,6 +5,12 @@ import {
   Sprite as TSprite,
   SpriteMaterial,
   Vector2,
+  DoubleSide,
+  Mesh,
+  Color,
+  BoxGeometry,
+  MeshBasicMaterial,
+  PlaneGeometry
 } from 'https://esm.sh/three@0.150.0';
 import { keyBy } from 'https://esm.sh/v107/@types/lodash@4.14.191/index';
 import { Sprite, Transform, Type } from '../components/generic/components.ts';
@@ -19,6 +25,17 @@ export class SpriteSystem extends AbstractSystem {
       Type.Sprite,
       Type.Transform,
     ];
+
+    const scenes = this.context.sceneManager.renderScenes;
+
+    const demo = new MeshBasicMaterial();
+    demo.color = new Color(0x000000);
+    const geometry = new BoxGeometry(1, 1, 1);
+    const mesh = new Mesh(geometry, demo);
+    mesh.position.set(0, 0.5, -3)
+    scenes.forEach((scene) => {
+      scene.instance.add(mesh);
+    });
   }
 
   async run(): Promise<void> {
@@ -48,11 +65,6 @@ export class SpriteSystem extends AbstractSystem {
             const rows = spriteComponent.spriteMap.source.data.height / height;
 
             spriteComponent.spriteMap.repeat.set(1 / columns, 1 / rows);
-            // spriteComponent.spriteMap.offset.set(
-            //   (1 / columns) * 1,
-            //   (1 / rows) * 1,
-            // );
-
             // Default Pivot Top / Left
             spriteComponent.spriteMap.center = new Vector2(0, 1);
 
@@ -64,20 +76,27 @@ export class SpriteSystem extends AbstractSystem {
             spriteComponent.spriteMap.wrapS = RepeatWrapping;
             spriteComponent.spriteMap.wrapT = RepeatWrapping;
 
-            spriteComponent.spriteMaterial = new SpriteMaterial({
-              map: spriteComponent.spriteMap,
-              depthWrite: false,
+            spriteComponent.spriteMaterial = new MeshBasicMaterial({
+              // map: spriteComponent.spriteMap,
+              // side: DoubleSide
             });
-            spriteComponent.instance = new TSprite(
-              spriteComponent.spriteMaterial,
-            );
+            // spriteComponent.spriteMaterial.depthTest = false;
+            // spriteComponent.spriteMaterial.transparent = true;
+            // spriteComponent.spriteMaterial.depthWrite = false;
+
+            const geometry = new BoxGeometry(this.getScaled(width), this.getScaled(height), .1);
+            // @ts-ignore
+            spriteComponent.instance = new Mesh(geometry, spriteComponent.spriteMaterial);
+
+            // // @ts-ignore
             // spriteComponent.instance.renderOrder = 1;
             // spriteComponent.instance.position.set(0, 0, 1);
-            spriteComponent.instance.scale.set(
-              this.getScaled(width),
-              this.getScaled(height),
-              1,
-            );
+            // spriteComponent.instance.scale.set(
+            //   this.getScaled(width),
+            //   this.getScaled(height),
+            //   1,
+            // );
+            // @ts-ignore
             scene.instance.add(spriteComponent.instance);
           }
 
@@ -85,17 +104,17 @@ export class SpriteSystem extends AbstractSystem {
         },
       );
 
-      this.query('update').filter((entity) => entity.visible).forEach(
-        (entity: Entity) => {
-          console.log('Update Entity');
-          const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
-          const { position: { x, y, z } } = entity.components.get(
-            Type.Transform,
-          ) as Transform;
+      // this.query('update').filter((entity) => entity.visible).forEach(
+      //   (entity: Entity) => {
+      //     console.log('Update Entity');
+      //     const spriteComponent = entity.components.get(Type.Sprite) as Sprite;
+      //     const { position: { x, y, z } } = entity.components.get(
+      //       Type.Transform,
+      //     ) as Transform;
 
-          spriteComponent.instance?.position.set(x, y, z);
-        },
-      );
+      //     spriteComponent.instance?.position.set(x, y, z);
+      //   },
+      // );
 
       const validEntities = scene.entitiesManager
         .getAllWithComponents(...this.queryComponents);

@@ -17,6 +17,8 @@ type Resources = {
   fonts: Array<string>;
 };
 
+const INTERNAL_MODELS = ['PlaneMesh', 'BoxMesh'];
+
 class ResourcesLoader {
   private _state = 'completed';
 
@@ -53,6 +55,7 @@ class ResourcesLoader {
   addResources(resources: ResourcesDefinition): void {
     console.log('[Resources Loader]', resources);
     this._resourcesSource = resources;
+    console.log('[Resources Loaded]', resources);
   }
 
   // getResource(name: string) {
@@ -66,6 +69,13 @@ class ResourcesLoader {
   //     });
   //   }
   // }
+
+  async getImage(name: string) {
+    return await this._textureLoader.loadAsync(
+      `./resources/images/${this._resourcesSource.images.get(name)
+      }`,
+    );
+  }
 
   // addFonts() {
   //   this._resourcesSource.fonts.forEach((source: string) => {
@@ -103,22 +113,36 @@ class ResourcesLoader {
           );
         }
 
+
         if (
           meshComponent && meshComponent.model &&
           !(meshComponent.model in this._resources.models)
         ) {
-          console.log(meshComponent.fileType)
-          switch (meshComponent.fileType) {
-            case 'obj':
-              await this.loadObj(meshComponent);
-              break;
-            case 'fbx':
-              await this.loadFbx(meshComponent);
-              break;
-            case 'glb':
-              await this.loadGlb(meshComponent);
-              break;
+
+          console.log('HMM', INTERNAL_MODELS)
+          if (!INTERNAL_MODELS.includes(meshComponent.model)) {
+            console.log('Will try load:', meshComponent.model);
+            switch (meshComponent.fileType) {
+              case 'obj':
+                await this.loadObj(meshComponent);
+                break;
+              case 'fbx':
+                await this.loadFbx(meshComponent);
+                break;
+              case 'gltf':
+              case 'glb':
+                await this.loadGlb(meshComponent);
+                break;
+            }
           }
+
+        }
+
+        if (meshComponent && meshComponent.shader) {
+          this._resources.shaders.set(
+            meshComponent.shader,
+            this._resourcesSource.shaders.get(meshComponent.shader),
+          );
         }
       }
     }
@@ -161,8 +185,10 @@ class ResourcesLoader {
   }
 
   async loadGlb(mesh: Mesh) {
+    console.log(mesh.model);
+    console.log(this._resourcesSource.models)
     const object = await this._gltfLoader.loadAsync(
-      `./resources/models/${this._resourcesSource.models.get(mesh.model)}.glb`,
+      `./resources/models/${this._resourcesSource.models.get(mesh.model)}.${mesh.fileType}`,
     );
     // object.scale.multiplyScalar(0.05);
 

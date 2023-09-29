@@ -13,13 +13,13 @@ import { LightSystem } from './light-system.ts';
 import { FbxAnimationSystem } from './fbx-animation-system.ts';
 import { PhysicsSystem } from './physics-system.ts';
 interface Constructable<T> {
-  new (context: Axink): T;
+  new(context: Axink): T;
 }
 
 const SYSTEMS: Record<string, Constructable<System>> = {
   ShapeSystem: ShapeSystem,
-  MeshSystem: MeshSystem,
   SpriteSystem: SpriteSystem,
+  MeshSystem: MeshSystem,
   PhysicsSystem: PhysicsSystem,
   FbxAnimationSystem: FbxAnimationSystem,
   CameraSystem: CameraSystem,

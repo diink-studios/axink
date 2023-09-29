@@ -1,4 +1,4 @@
-import { AnimationMixer, Object3D } from 'https://esm.sh/three@0.150.0';
+import { AnimationMixer, Object3D, BufferGeometry } from 'https://esm.sh/three@0.150.0';
 import { AbstractComponent } from './generic/abstract-component.ts';
 import { Type } from './generic/components.ts';
 import {
@@ -25,6 +25,8 @@ export class Mesh extends AbstractComponent {
 
   public instance?: Object3D;
 
+  public geometry?: BufferGeometry;
+
   public mixer?: AnimationMixer;
 
   constructor(data: MeshDefinition) {
@@ -36,6 +38,7 @@ export class Mesh extends AbstractComponent {
     this.material = data.material || false;
     this.fileType = data.fileType || 'gltf';
     this.animation = data.animation || false;
+    this.shader = data.shader;
   }
 
   _clone(): Mesh {

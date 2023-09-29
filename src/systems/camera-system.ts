@@ -81,9 +81,12 @@ export class CameraSystem extends AbstractSystem {
           const lookAtSprite = lookAtEntity?.getComponent(
             Type.Sprite,
           ) as Sprite;
+
           if (lookAtSprite && lookAtSprite.instance) {
             console.log('ADDING TO PARENT');
             lookAtSprite.instance.add(camera.instance);
+            // const center = new THREE.Vector3()
+
             camera.instance.lookAt(lookAtSprite.instance.position);
             camera.instance.position.x = position.x; // HAmmer
             camera.instance.position.y = position.y; // HAmmer
@@ -92,6 +95,8 @@ export class CameraSystem extends AbstractSystem {
             camera.lookAtSet = true;
           }
         }
+
+        // camera.instance.rotation.set()
 
         // deno-lint-ignore ban-ts-comment
         // @ts-ignore

@@ -58,14 +58,13 @@ export class Axink {
       powerPreference: 'high-performance',
       antialias: false,
       stencil: false,
-      depth: false,
+      // depth: false,
     });
 
     renderer.setClearColor(background, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
 
     renderer.outputEncoding = sRGBEncoding;
-
     // renderer.toneMapping = ReinhardToneMapping;
     // renderer.toneMappingExposure = 1.2;
 
@@ -73,6 +72,9 @@ export class Axink {
     renderer.shadowMap.type = PCFSoftShadowMap;
     renderer.autoClear = false;
     renderer.autoClearDepth = false;
+    renderer.sortObjects = true;
+
+    // renderer.sortObjects = true;
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     appendToHead(packages);
@@ -143,7 +145,7 @@ export class Axink {
     }
   }
 
-  async start(): Promise<void> {
+  async start(run = false): Promise<void> {
     console.log('[AXINK]::START');
     this.sceneManager.init();
 
@@ -177,7 +179,9 @@ export class Axink {
 
     console.log('[AXINK]::LOOP(START)');
 
-    this.loop();
+    if (run) {
+      this.loop();
+    }
   }
 
   public postprocessing(scene: TScene, camera: Camera) {
@@ -187,7 +191,8 @@ export class Axink {
     const renderPass = new RenderPass(scene, camera);
     // renderPass.clear = false;
     // renderPass.clearColor = false;
-    // renderPass.clearDepth = false;
+    // renderPass.clearDepth = true;
+    // renderPass.sortObjects = true;
     renderPass.renderToScreen = true;
 
     effectComponser.addPass(renderPass);

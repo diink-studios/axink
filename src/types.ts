@@ -21,3 +21,11 @@ export interface AxinkConfigs {
   systems?: SystemsConfig;
   graphics: AxinkGraphics;
 }
+
+export type Resources = {
+  images: Map<string, any>;
+  videos: Map<string, any>;
+  models: Map<string, any>;
+  shaders: Map<string, any>;
+  fonts: Array<string>;
+};

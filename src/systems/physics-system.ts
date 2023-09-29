@@ -241,18 +241,18 @@ export class PhysicsSystem extends AbstractSystem {
       });
     });
     // console.log('LOG', this.world)
-    scenes.forEach((scene) => {
-      let buffers = this.world.debugRender();
-      // this.lines.visible = true;
-      this.lines.geometry.setAttribute(
-        "position",
-        new BufferAttribute(buffers.vertices, 3),
-      );
-      this.lines.geometry.setAttribute(
-        "color",
-        new BufferAttribute(buffers.colors, 4),
-      );
-    });
+    // scenes.forEach((scene) => {
+    //   let buffers = this.world.debugRender();
+    //   // this.lines.visible = true;
+    //   this.lines.geometry.setAttribute(
+    //     "position",
+    //     new BufferAttribute(buffers.vertices, 3),
+    //   );
+    //   this.lines.geometry.setAttribute(
+    //     "color",
+    //     new BufferAttribute(buffers.colors, 4),
+    //   );
+    // });
 
 
     this.world.step();

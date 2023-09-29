@@ -1,4 +1,4 @@
-import Enjin from '..';
+import Axink from '../axink.ts';
 import ScriptConstructable from '../core/script/script-constructable.ts';
 
 /**
@@ -8,7 +8,7 @@ export type ResourcesDefinition = {
   models: Map<string, string>;
   images: Map<string, string>;
   videos: Map<string, string>;
-  shaders: Map<string, string>;
+  shaders: Map<string, Record<string, any>>;
   fonts: Array<string>;
 };
 
@@ -21,7 +21,7 @@ export type ScriptsDefinition = Map<string, ScriptConstructable>;
 
 export type ScriptsDefinitionInternal = {
   scripts: ScriptsDefinition;
-  engine: Enjin;
+  engine: Axink;
 };
 
 //

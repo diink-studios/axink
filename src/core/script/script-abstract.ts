@@ -3,8 +3,8 @@ import SceneManager from '../../managers/scenes-manager.ts';
 // import { InputSystem } from '../systems/InputSystem';
 import { Entity } from '../entity.ts';
 import { Input, input } from '../input.ts';
-import Scene from '../scene';
-import ScriptInstance from './script-instance';
+import Scene from '../scene.ts';
+import ScriptInstance from './script-instance.ts';
 export class AbstractScript implements ScriptInstance {
   private _name?: string;
 

@@ -4,6 +4,7 @@ import { Camera } from '../camera.ts';
 import { Interface } from '../interface.ts';
 import { Light } from '../light.ts';
 import { Mesh } from '../mesh.ts';
+import { PlaneMesh } from '../geometries/plane-mesh.ts';
 import { Script } from '../script.ts';
 import { Shape } from '../shape.ts';
 import { Rectangle } from '../shapes/rectangle-shape.ts';
@@ -70,6 +71,7 @@ export {
   Sprite,
   Tilemap,
   Transform,
+  PlaneMesh,
   // Animator,
   // PlaneMesh,
   // DirectionalLight,

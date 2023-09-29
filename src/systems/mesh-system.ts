@@ -1,8 +1,34 @@
-import { Mesh, Transform, Type } from '../components/generic/components.ts';
+import { Mesh, Transform, Type, } from '../components/generic/components.ts';
 import { Entity } from '../index.ts';
 import { resourcesLoader } from '../loaders/loader-resources.ts';
 import { AbstractSystem } from './abstract-system.ts';
-import { Euler, MathUtils } from 'https://esm.sh/three@0.150.0';
+import { Euler, MathUtils, Mesh as TMesh, PlaneGeometry, MeshBasicMaterial, DoubleSide, ShaderMaterial } from 'https://esm.sh/three@0.150.0';
+
+function getShaderMaterial(shader: string) {
+  console.log('Get Shader', shader)
+  console.log('Shader', resourcesLoader.resources)
+  const shaderLoad = resourcesLoader.resources.shaders.get(shader);
+  console.log(shaderLoad)
+
+  return new ShaderMaterial(shaderLoad);
+}
+
+function getMeshModel(meshComponent: any) {
+  switch (meshComponent.model) {
+    // deno-lint-ignore no-case-declarations
+    case 'PlaneMesh':
+      const geometry = new PlaneGeometry(meshComponent.width, meshComponent.height, 40);
+      const material = meshComponent.shader ? getShaderMaterial(meshComponent.shader) : new MeshBasicMaterial({ color: 0x000000, side: DoubleSide });
+      return new TMesh(geometry, material);
+    // deno-lint-ignore no-case-declarations
+    default:
+      const modelLoaded = resourcesLoader.resources.models.get(
+        meshComponent.model,
+      );
+
+      return modelLoaded.scene ? modelLoaded.scene : modelLoaded;
+  }
+}
 
 export class MeshSystem extends AbstractSystem {
   async start(deltaTime?: number | undefined): Promise<void> {
@@ -22,33 +48,27 @@ export class MeshSystem extends AbstractSystem {
     scenes.forEach((scene) => {
       this.query('add').filter((entity) => entity.visible).forEach(
         (entity: Entity) => {
-          const meshComponent = entity.components.get(Type.Mesh) as Mesh;
+          let meshComponent = entity.components.get(Type.Mesh) as Mesh;
           const { position: { x, y, z }, rotation } = entity.components.get(
             Type.Transform,
           ) as Transform;
 
           if (!meshComponent.instance) {
-            meshComponent.instance = resourcesLoader.resources.models.get(
-              meshComponent.model,
-            );
 
-            console.log('MESH', meshComponent.instance)
+            meshComponent.instance = getMeshModel(meshComponent);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // meshComponent = {
+            //   ...meshComponent,
+            //   ...getMeshModel(meshComponent.model)
+            // }
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             scene.instance.add(meshComponent.instance);
-            console.log('SENCE', scene);
           }
 
           if (meshComponent.instance) {
             meshComponent.instance?.position.set(x, y, z);
-
-            // meshComponent.instance?.rotateX(
-            //   MathUtils.degToRad(rotation.x),
-            // );
-            // meshComponent.instance?.rotateZ(
-            //   MathUtils.degToRad(rotation.z),
-            // );
-            console.log('DEGREE', rotation.y, MathUtils.degToRad(rotation.y));
 
             meshComponent.instance?.setRotationFromEuler(
               new Euler(
@@ -72,7 +92,13 @@ export class MeshSystem extends AbstractSystem {
           ) as Transform;
 
           if (meshComponent.instance) {
-            meshComponent.instance?.children[0].position.set(x, y, z);
+            console.log('POSITION', meshComponent.instance)
+
+            if (meshComponent.instance?.type === 'Mesh') {
+              meshComponent.instance?.position.set(x, y, z);
+            } else {
+              meshComponent.instance?.children[0].position.set(x, y, z);
+            }
 
             meshComponent.instance?.setRotationFromEuler(
               new Euler(

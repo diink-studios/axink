@@ -116,12 +116,18 @@ export interface MeshDefinition {
   animation?: boolean;
 }
 
-// export interface PlaneMeshDefinition extends Omit<MeshDefinition, 'model'> {
-//   width?: number;
-//   height?: number;
-//   widthSegments?: number;
-//   heightSegments?: number;
-// }
+export interface BoxMeshDefinition extends Omit<MeshDefinition, 'model'> {
+  width?: number;
+  height?: number;
+  lenght?: number;
+}
+
+export interface PlaneMeshDefinition extends Omit<MeshDefinition, 'model'> {
+  width: number;
+  height: number;
+  widthSegments?: number;
+  heightSegments?: number;
+}
 
 export interface LightDefinition {
   light: 'directional' | 'ambient' | 'hemisphere' | 'point' | 'spot';
@@ -180,7 +186,8 @@ export type ComponentsDefinitions =
   | TilemapDefinition
   | RectangleShapeDefinition
   | MeshDefinition
-  // | PlaneMeshDefinition
+  | PlaneMeshDefinition
+  | BoxMeshDefinition
   | InterfaceDefinition
   | LightDefinition
   | AnimatorDefinition
