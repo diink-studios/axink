@@ -1,5 +1,5 @@
 import { Type } from '../components/generic/components.ts';
-import { Axink } from '../index.ts';
+import { Axink } from '../mod.ts';
 import { Entity } from './entity.ts';
 
 export type QueryEvent = 'add' | 'update' | 'remove';

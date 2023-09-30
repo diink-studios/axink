@@ -6,7 +6,7 @@ import {
   PointLightHelper,
 } from 'https://esm.sh/three@0.150.0';
 import { Light, Transform, Type } from '../components/generic/components.ts';
-import { Entity } from '../index.ts';
+import { Entity } from '../mod.ts';
 import { AbstractSystem } from './abstract-system.ts';
 
 export class LightSystem extends AbstractSystem {

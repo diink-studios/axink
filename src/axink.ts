@@ -145,7 +145,7 @@ export class Axink {
     }
   }
 
-  async start(run = false): Promise<void> {
+  async start(): Promise<void> {
     console.log('[AXINK]::START');
     this.sceneManager.init();
 
@@ -179,9 +179,7 @@ export class Axink {
 
     console.log('[AXINK]::LOOP(START)');
 
-    if (run) {
-      this.loop();
-    }
+    this.loop();
   }
 
   public postprocessing(scene: TScene, camera: Camera) {

@@ -1,5 +1,5 @@
 import { Mesh, Transform, Type } from '../components/generic/components.ts';
-import { Entity } from '../index.ts';
+import { Entity } from '../mod.ts';
 import { resourcesLoader } from '../loaders/loader-resources.ts';
 import { AbstractSystem } from './abstract-system.ts';
 import { AnimationMixer, Clock } from 'https://esm.sh/three@0.150.0';

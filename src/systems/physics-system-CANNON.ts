@@ -1,5 +1,5 @@
 import { BoxCollider, Mesh, Transform, Type } from '../components/generic/components.ts';
-import { Entity, Sprite } from '../index.ts';
+import { Entity, Sprite } from '../mod.ts';
 import { resourcesLoader } from '../loaders/loader-resources.ts';
 import { AbstractSystem } from './abstract-system.ts';
 import { AnimationMixer, Clock, MathUtils } from 'https://esm.sh/three@0.150.0';

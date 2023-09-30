@@ -1,4 +1,4 @@
-import { Axink } from '../index.ts';
+import { Axink } from '../mod.ts';
 import { AbstractSystem, System } from './abstract-system.ts';
 import { ScriptSystem } from './script-system.ts';
 import { CameraSystem } from './camera-system.ts';

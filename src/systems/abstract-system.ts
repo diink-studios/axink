@@ -1,7 +1,7 @@
 import { Axink } from '../axink.ts';
 import { Type } from '../components/generic/components.ts';
 import { QueryEvent, queryManager } from '../core/query-manager.ts';
-import { Entity } from '../index.ts';
+import { Entity } from '../mod.ts';
 
 export interface System {
   context: Axink;

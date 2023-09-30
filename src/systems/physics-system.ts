@@ -1,5 +1,5 @@
 import { BoxCollider, Mesh, Transform, Type } from '../components/generic/components.ts';
-import { Entity, Sprite } from '../index.ts';
+import { Entity, Sprite } from '../mod.ts';
 import { resourcesLoader } from '../loaders/loader-resources.ts';
 import { AbstractSystem } from './abstract-system.ts';
 import { Quaternion, Vector3, MathUtils, BufferAttribute, LineBasicMaterial, BufferGeometry, LineSegments } from 'https://esm.sh/three@0.150.0';
